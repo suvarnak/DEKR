@@ -126,3 +126,5 @@ work_dirs/
 
 # Pytorch
 *.pth
+*.avi
+*.avi

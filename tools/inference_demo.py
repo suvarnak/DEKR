@@ -150,7 +150,7 @@ def parse_args():
     # general
     parser.add_argument('--cfg', type=str, required=True)
     parser.add_argument('--videoFile', type=str, required=True)
-    parser.add_argument('--outputDir', type=str, default='/output/')
+    parser.add_argument('--outputDir', type=str, default='./output/')
     parser.add_argument('--inferenceFps', type=int, default=10)
     parser.add_argument('--visthre', type=float, default=0)
     parser.add_argument('opts',
@@ -202,6 +202,8 @@ def main():
 
     # Loading an video
     vidcap = cv2.VideoCapture(args.videoFile)
+    print(args.videoFile)
+    print(vidcap.isOpened())
     fps = vidcap.get(cv2.CAP_PROP_FPS)
     if fps < args.inferenceFps:
         raise ValueError('desired inference fps is ' +
