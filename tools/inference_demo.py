@@ -87,7 +87,9 @@ CROWDPOSE_KEYPOINT_INDEXES = {
     13: 'neck'
 }
 
-
+pose_colors = []
+for i in range(15):
+   pose_colors.append(list(np.random.randint(0, 255, size=(3, ))))
 def get_pose_estimation_prediction(cfg, model, image, vis_thre, transforms):
     # size at scale 1.0
     base_size, center, scale = get_multi_scale_size(
@@ -150,9 +152,9 @@ def parse_args():
     # general
     parser.add_argument('--cfg', type=str, required=True)
     parser.add_argument('--videoFile', type=str, required=True)
-    parser.add_argument('--outputDir', type=str, default='./output/')
-    parser.add_argument('--inferenceFps', type=int, default=10)
-    parser.add_argument('--visthre', type=float, default=0)
+    parser.add_argument('--outputDir', type=str, default='/output/')
+    parser.add_argument('--inferenceFps', type=int, default=25)
+    parser.add_argument('--visthre', type=float, default=0.3)
     parser.add_argument('opts',
                         help='Modify config options using the command-line',
                         default=None,
@@ -202,8 +204,6 @@ def main():
 
     # Loading an video
     vidcap = cv2.VideoCapture(args.videoFile)
-    print(args.videoFile)
-    print(vidcap.isOpened())
     fps = vidcap.get(cv2.CAP_PROP_FPS)
     if fps < args.inferenceFps:
         raise ValueError('desired inference fps is ' +
@@ -212,7 +212,7 @@ def main():
     frame_width = int(vidcap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frame_height = int(vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     outcap = cv2.VideoWriter('{}/{}_pose.avi'.format(args.outputDir, os.path.splitext(os.path.basename(args.videoFile))[0]),
-                             cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), int(skip_frame_cnt), (frame_width, frame_height))
+                             cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps, (frame_width, frame_height))
 
     count = 0
     while vidcap.isOpened():
@@ -242,13 +242,19 @@ def main():
             continue
 
         print("Find person pose in: {} sec".format(then - now))
-
+        #print(pose_colors)
         new_csv_row = []
+        i = 0
         for coords in pose_preds:
             # Draw each point on image
+            #pose_color = np.random.choice(range(256), size=3)
+            pose_color = [int(c) for c in pose_colors[i]]
+            i+=1
             for coord in coords:
                 x_coord, y_coord = int(coord[0]), int(coord[1])
-                cv2.circle(image_debug, (x_coord, y_coord), 4, (255, 0, 0), 2)
+                cv2.circle(image_debug, (x_coord, y_coord), 4, tuple(pose_color), thickness=2)
+                #cv2.circle(canvas, tuple(center), r, tuple (color), thickness=-1)
+
                 new_csv_row.extend([x_coord, y_coord])
 
         total_then = time.time()
