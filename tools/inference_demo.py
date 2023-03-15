@@ -138,6 +138,26 @@ def get_pose_estimation_prediction(cfg, model, image, vis_thre, transforms):
 
     return final_results
 
+def draw_skeleton(img, kp, show_skeleton_labels=False, dataset= "COCO"):
+    if dataset == "COCO":
+        skeleton = [[16, 14], [14, 12], [17, 15], [15, 13], [12, 13], [6, 12], [7, 13], [6, 7], [6, 8], [7, 9], [8, 10], [9, 11], [2, 3], [1, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 7]]
+        kp_names = ['nose', 'l_eye', 'r_eye', 'l_ear', 'r_ear', 'l_shoulder',
+        'r_shoulder', 'l_elbow', 'r_elbow', 'l_wrist', 'r_wrist',
+        'l_hip', 'r_hip', 'l_knee', 'r_knee', 'l_ankle', 'r_ankle']
+    for i, j in skeleton:
+        if kp[i-1][0] >= 0 and kp[i-1][1] >= 0 and kp[j-1][0] >= 0 and kp[j-1][1] >= 0 and \
+            (len(kp[i-1]) <= 2 or (len(kp[i-1]) > 2 and  kp[i-1][2] > 0.1 and kp[j-1][2] > 0.1)):
+            x_coord1, y_coord1 = int(kp[i-1][0]), int(kp[i-1][1])
+            x_coord2, y_coord2 = int(kp[j-1][0]), int(kp[j-1][1])
+            cv2.line(img, tuple([x_coord1,y_coord1]), tuple([x_coord2,y_coord2]), (0,255,255), 2)
+    for j in range(len(kp)):
+        if kp[j][0] >= 0 and kp[j][1] >= 0:
+            if len(kp[j]) <= 2 or (len(kp[j]) > 2 and kp[j][2] > 1.1):
+                x_coord1, y_coord1 = int(kp[j][0]), int(kp[j][1])
+                cv2.circle(img, tuple([x_coord1, y_coord1]), 2, tuple((0,0,255)), 2)
+            elif len(kp[j]) <= 2 or (len(kp[j]) > 2 and kp[j][2] > 0.1):
+                x_coord1, y_coord1 = int(kp[j][0]), int(kp[j][1])
+                cv2.circle(img, tuple([x_coord1, y_coord1]), 2, tuple((255,0,0)), 2)
 
 def prepare_output_dirs(prefix='/output/'):
     pose_dir = os.path.join(prefix, "pose")
@@ -256,11 +276,11 @@ def main():
                 #cv2.circle(canvas, tuple(center), r, tuple (color), thickness=-1)
 
                 new_csv_row.extend([x_coord, y_coord])
-
+            draw_skeleton(image_debug,coords)
         total_then = time.time()
         text = "{:03.2f} sec".format(total_then - total_now)
-        cv2.putText(image_debug, text, (100, 50), cv2.FONT_HERSHEY_SIMPLEX,
-                    1, (0, 0, 255), 2, cv2.LINE_AA)
+        # cv2.putText(image_debug, text, (100, 50), cv2.FONT_HERSHEY_SIMPLEX,
+        #             1, (0, 0, 255), 2, cv2.LINE_AA)
 
         csv_output_rows.append(new_csv_row)
         img_file = os.path.join(pose_dir, 'pose_{:08d}.jpg'.format(count))

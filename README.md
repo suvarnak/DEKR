@@ -237,6 +237,9 @@ python tools/inference_demo.py --cfg experiments/coco/inference_demo_coco.yaml \
     --videoFile ../multi_people.mp4 \
     --outputDir output \
     --visthre 0.3 \
+    TEST.MODEL_FILE model/pose_coco/pose_dekr_hrnetw32.pth\
+    --outputDir output \
+    --visthre 0.3 \
     TEST.MODEL_FILE model/pose_coco/pose_dekr_hrnetw32.pth
 python tools/inference_demo.py --cfg experiments/crowdpose/inference_demo_crowdpose.yaml \
     --videoFile ../multi_people.mp4 \
